@@ -105,6 +105,14 @@ def main(category: str, max_pages: int, usd_pkr: float) -> None:
         df["price_usd"] = (df["price_pkr"] / usd_pkr).round(2)
         df.to_csv(out, index=False)
         print(f"[priceoye] wrote {len(df)} rows -> {out}")
+
+        # Also drop a JSON copy next to the processed data — this is what the
+        # FastAPI backend (src/services/market.py) reads to power the
+        # "Pakistani market" comparison panel in the web app.
+        market_json = cfg.path("processed_dir") / "priceoye_market.json"
+        market_json.parent.mkdir(parents=True, exist_ok=True)
+        df.dropna(subset=["price_pkr"]).to_json(market_json, orient="records", indent=2)
+        print(f"[priceoye] wrote {market_json}")
     else:
         print("[priceoye] no rows scraped (blocked or offline).")
 
