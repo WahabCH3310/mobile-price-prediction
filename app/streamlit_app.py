@@ -1,4 +1,4 @@
-"""Streamlit dashboard (FYP proposal §6, §12.2) — animated, PKR-aware build.
+"""Streamlit dashboard (FYP proposal §6, §12.2) — professional, PKR-aware build.
 
 Interactive smartphone price predictor with per-prediction SHAP explanations,
 a live USD→PKR price conversion, and a Pakistani retail-market comparison
@@ -23,6 +23,7 @@ from src.services.market import get_market_data  # noqa: E402
 
 st.set_page_config(page_title="Mobile Price Predictor — Pakistan", page_icon="📱", layout="wide")
 
+
 @st.cache_resource
 def load_service():
     return get_service()
@@ -31,102 +32,77 @@ def load_service():
 svc = load_service()
 
 # ══════════════════════════════════════════════════════════════════
-#  Global styling — one CSS injection drives the whole look: dark
-#  base (set in .streamlit/config.toml), Space Grotesk / JetBrains
-#  Mono type, gradient accents, and the keyframes used by the
-#  animated cards further down.
+#  Global styling.
+#
+#  IMPORTANT: Streamlit runs st.markdown() text through Python-Markdown
+#  before allowing raw HTML. Python-Markdown treats a blank line as the
+#  end of an HTML block — anything after a blank line inside a <style>
+#  tag gets dumped onto the page as literal visible text instead of
+#  being applied as CSS. So every string below is built with ZERO blank
+#  lines. Do not reformat this with blank lines between rules.
 # ══════════════════════════════════════════════════════════════════
-st.markdown("""
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --violet:#7c5cff; --pink:#ff5ca8; --gold:#f0b93f; --green:#3ddc97; --red:#ff6b6b;
-  --panel:#12151d; --panel2:#171b26; --line:#232838; --dim:#8b93a7; --faint:#565f74;
-}
-html, body, [class*="css"]{ font-family:'Space Grotesk', sans-serif; }
-.mono{ font-family:'JetBrains Mono', monospace; }
-
-/* Hero */
-.hero{
-  padding:34px 36px; border-radius:20px; margin-bottom:28px;
-  background:
-    radial-gradient(ellipse 600px 260px at 10% 0%, rgba(124,92,255,.28), transparent 60%),
-    radial-gradient(ellipse 500px 260px at 100% 20%, rgba(255,92,168,.18), transparent 55%),
-    var(--panel);
-  border:1px solid var(--line);
-  opacity:0; animation:rise .7s ease forwards;
-}
-.hero h1{ font-size:32px; font-weight:700; letter-spacing:-.02em; margin:0 0 8px; }
-.hero p{ color:var(--dim); font-size:15px; max-width:640px; margin:0; }
-.eyebrow{
-  font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--gold);
-  display:flex; align-items:center; gap:8px; margin-bottom:14px;
-}
-.live-dot{ width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
-@keyframes rise{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
-
-/* Result tier badge */
-.tier-badge{
-  text-align:center; padding:24px 10px; border-radius:16px; margin-bottom:16px;
-  background:linear-gradient(135deg, rgba(124,92,255,.16), rgba(255,92,168,.08));
-  border:1px solid rgba(124,92,255,.32);
-  opacity:0; animation:rise .5s ease forwards;
-}
-.tier-badge .k{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--dim); }
-.tier-badge .name{
-  font-size:30px; font-weight:700; margin-top:4px;
-  background:linear-gradient(135deg,#fff,var(--dim)); -webkit-background-clip:text; background-clip:text; color:transparent;
-}
-
-/* Probability / SHAP bars (CSS-variable driven keyframe fill) */
-.bar-row{ margin-bottom:11px; }
-.bar-label{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--dim); margin-bottom:5px; font-family:'JetBrains Mono',monospace; }
-.bar-track{ height:8px; border-radius:4px; background:var(--panel2); overflow:hidden; }
-.bar-fill{ height:100%; border-radius:4px; width:0; background:linear-gradient(90deg, var(--violet), var(--pink));
-  animation:grow 1s cubic-bezier(.16,1,.3,1) forwards; animation-delay:.15s; }
-@keyframes grow{ to{ width:var(--w); } }
-
-.shap-row{ display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px; }
-.shap-feat{ width:150px; flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim);
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.shap-track{ flex:1; height:16px; background:var(--panel2); border-radius:4px; position:relative; overflow:hidden; }
-.shap-mid{ position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--line); }
-.shap-fill{ position:absolute; top:0; bottom:0; width:0; animation:growshap .8s ease forwards; animation-delay:.2s; }
-.shap-fill.pos{ left:50%; background:rgba(61,220,151,.55); }
-.shap-fill.neg{ right:50%; background:rgba(255,107,107,.55); }
-@keyframes growshap{ to{ width:var(--w); } }
-.shap-amt{ width:60px; text-align:right; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--faint); }
-
-/* Market cards */
-.market-card{
-  background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px;
-  opacity:0; animation:rise .5s ease forwards;
-}
-.market-card .name{ font-size:13.5px; font-weight:600; margin-bottom:8px; line-height:1.3; }
-.market-card .price{ font-family:'JetBrains Mono',monospace; font-size:16px; color:var(--gold); font-weight:600; }
-.market-card .avail{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--faint); margin-top:6px; }
-.market-empty{ border:1px dashed var(--line); border-radius:12px; padding:32px 20px; text-align:center; color:var(--dim); font-size:13.5px; }
-.market-empty code{ font-family:'JetBrains Mono',monospace; background:var(--panel2); padding:2px 7px; border-radius:5px; color:var(--gold); font-size:12px; }
-
-.rate-note{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--faint); display:flex; align-items:center; gap:6px; margin:2px 0 18px; }
-.rate-note.approx .live-dot{ background:var(--faint); }
-</style>
-""", unsafe_allow_html=True)
+_CSS_LINES = [
+    "<link rel='preconnect' href='https://fonts.googleapis.com'>",
+    "<link href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap' rel='stylesheet'>",
+    "<style>",
+    ":root{--accent:#5b8def;--accent2:#4fd1c5;--gold:#e8b85c;--green:#34d399;--red:#f87171;",
+    "--panel:#161920;--panel2:#1c2029;--line:#2a2f3a;--ink:#eef0f3;--dim:#9099a8;--faint:#5b6270;}",
+    "html,body,[class*='css']{font-family:'Space Grotesk',sans-serif;}",
+    ".mono{font-family:'JetBrains Mono',monospace;}",
+    "div[data-testid='stAppViewContainer']{background:radial-gradient(ellipse 900px 500px at 15% -10%,rgba(91,141,239,.10),transparent 60%),radial-gradient(ellipse 700px 460px at 100% 5%,rgba(79,209,197,.07),transparent 55%),#0e1013;}",
+    ".card-3d{transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .45s ease;}",
+    ".card-3d:hover{transform:perspective(900px) rotateX(2.5deg) rotateY(-2.5deg) translateY(-4px);box-shadow:0 26px 50px -18px rgba(0,0,0,.65),0 0 0 1px rgba(91,141,239,.14);}",
+    ".hero{padding:32px 36px;border-radius:18px;margin-bottom:26px;background:linear-gradient(160deg,#171b24 0%,#13161d 100%);border:1px solid var(--line);box-shadow:0 18px 40px -22px rgba(0,0,0,.7);opacity:0;animation:rise .6s ease forwards;}",
+    ".hero h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px;color:var(--ink);}",
+    ".hero p{color:var(--dim);font-size:14.5px;max-width:660px;margin:0;line-height:1.55;}",
+    ".eyebrow{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--accent2);display:flex;align-items:center;gap:8px;margin-bottom:14px;letter-spacing:.02em;}",
+    ".live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2.2s infinite;}",
+    "@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}",
+    "@keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}",
+    ".tier-badge{text-align:center;padding:22px 10px;border-radius:14px;margin-bottom:14px;background:var(--panel);border:1px solid var(--line);opacity:0;animation:rise .45s ease forwards;}",
+    ".tier-badge .k{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;}",
+    ".tier-badge .name{font-size:27px;font-weight:700;margin-top:6px;color:var(--ink);}",
+    ".tier-badge .accent-bar{height:3px;width:40px;margin:12px auto 0;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}",
+    ".bar-row{margin-bottom:11px;}",
+    ".bar-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim);margin-bottom:5px;font-family:'JetBrains Mono',monospace;}",
+    ".bar-track{height:7px;border-radius:4px;background:var(--panel2);overflow:hidden;}",
+    ".bar-fill{height:100%;border-radius:4px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:grow 1s cubic-bezier(.16,1,.3,1) forwards;animation-delay:.1s;}",
+    "@keyframes grow{to{width:var(--w);}}",
+    ".shap-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:12.5px;}",
+    ".shap-feat{width:150px;flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}",
+    ".shap-track{flex:1;height:15px;background:var(--panel2);border-radius:4px;position:relative;overflow:hidden;}",
+    ".shap-mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line);}",
+    ".shap-fill{position:absolute;top:0;bottom:0;width:0;animation:growshap .8s ease forwards;animation-delay:.15s;}",
+    ".shap-fill.pos{left:50%;background:rgba(52,211,153,.5);}",
+    ".shap-fill.neg{right:50%;background:rgba(248,113,113,.5);}",
+    "@keyframes growshap{to{width:var(--w);}}",
+    ".shap-amt{width:58px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);}",
+    ".market-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:10px;opacity:0;animation:rise .45s ease forwards;}",
+    ".market-card .name{font-size:13px;font-weight:600;margin-bottom:7px;line-height:1.3;color:var(--ink);}",
+    ".market-card .price{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--gold);font-weight:600;}",
+    ".market-card .avail{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);margin-top:5px;}",
+    ".market-empty{border:1px dashed var(--line);border-radius:12px;padding:30px 18px;text-align:center;color:var(--dim);font-size:13px;}",
+    ".market-empty code{font-family:'JetBrains Mono',monospace;background:var(--panel2);padding:2px 6px;border-radius:5px;color:var(--gold);font-size:11.5px;}",
+    "div[data-testid='stButton']>button{border-radius:10px;font-weight:600;transition:transform .15s ease,box-shadow .15s ease;box-shadow:0 6px 18px -8px rgba(91,141,239,.55);}",
+    "div[data-testid='stButton']>button:hover{transform:translateY(-2px);box-shadow:0 10px 22px -8px rgba(91,141,239,.7);}",
+    "div[data-testid='stButton']>button:active{transform:translateY(0px) scale(.98);box-shadow:0 3px 10px -6px rgba(91,141,239,.5);}",
+    "</style>",
+]
+st.markdown("".join(_CSS_LINES), unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════
 #  Hero
 # ══════════════════════════════════════════════════════════════════
-st.markdown(f"""
-<div class="hero">
-  <div class="eyebrow"><span class="live-dot"></span> live · ML-powered · PKR pricing</div>
-  <h1>📱 Mobile Price Prediction</h1>
-  <p>Predict a smartphone's <b>price tier</b> and <b>estimated price</b> (USD &amp; live PKR) from its hardware
-  specs, with SHAP explanations and a live Pakistani market comparison.
-  Best classifier: <b>{svc.meta['best_classifier']}</b> · Best regressor: <b>{svc.meta['best_regressor']}</b>.</p>
-</div>
-""", unsafe_allow_html=True)
+_hero = (
+    "<div class='hero card-3d'>"
+    "<div class='eyebrow'><span class='live-dot'></span> live · ML-powered · PKR pricing</div>"
+    "<h1>📱 Mobile Price Prediction</h1>"
+    "<p>Predict a smartphone's <b>price tier</b> and <b>estimated price</b> (USD &amp; live PKR) from its "
+    "hardware specs, with SHAP explanations and a live Pakistani market comparison. "
+    f"Best classifier: <b>{svc.meta['best_classifier']}</b> · Best regressor: <b>{svc.meta['best_regressor']}</b>.</p>"
+    "</div>"
+)
+st.markdown(_hero, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════
 #  Sidebar: specification inputs
@@ -185,74 +161,71 @@ specs = dict(
 
 
 # ══════════════════════════════════════════════════════════════════
-#  Animated count-up price cards (self-contained HTML/JS component)
+#  HTML builders — every string below is assembled with NO blank
+#  lines, for the same reason described in the CSS section above.
 # ══════════════════════════════════════════════════════════════════
 def price_cards_html(usd: float, pkr: float, live: bool, rate: float) -> str:
-    dot_color = "#3ddc97" if live else "#565f74"
+    dot_color = "#34d399" if live else "#5b6270"
     label = "live rate" if live else "approx., live rate unavailable"
-    return f"""
-    <div style="font-family:'Space Grotesk',sans-serif; background:transparent;">
-      <div style="display:flex; gap:10px;">
-        <div style="flex:1; background:#171b26; border:1px solid #232838; border-radius:10px; padding:14px;">
-          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#565f74;">USD</div>
-          <div id="usd" style="font-size:22px; font-weight:700; margin-top:4px; font-family:'JetBrains Mono',monospace; color:#f0b93f;">$0</div>
-        </div>
-        <div style="flex:1; background:#171b26; border:1px solid #232838; border-radius:10px; padding:14px;">
-          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#565f74;">PKR</div>
-          <div id="pkr" style="font-size:22px; font-weight:700; margin-top:4px; font-family:'JetBrains Mono',monospace; color:#f0b93f;">Rs 0</div>
-        </div>
-      </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#565f74; margin-top:10px; display:flex; align-items:center; gap:6px;">
-        <span style="width:5px;height:5px;border-radius:50%;background:{dot_color};display:inline-block;"></span>
-        1 USD &asymp; {rate:.2f} PKR ({label})
-      </div>
-    </div>
-    <script>
-      function countUp(id, target, prefix) {{
-        const el = document.getElementById(id);
-        const start = performance.now(), dur = 900;
-        function frame(now) {{
-          const p = Math.min(1, (now - start) / dur);
-          const eased = 1 - Math.pow(1 - p, 3);
-          const val = Math.round(target * eased);
-          el.textContent = prefix + val.toLocaleString();
-          if (p < 1) requestAnimationFrame(frame);
-        }}
-        requestAnimationFrame(frame);
-      }}
-      countUp("usd", {usd}, "$");
-      countUp("pkr", {pkr}, "Rs ");
-    </script>
-    """
+    return (
+        "<div style=\"font-family:'Space Grotesk',sans-serif;background:transparent;\">"
+        "<div style='display:flex;gap:10px;perspective:600px;'>"
+        "<div class='pc-3d' style=\"flex:1;background:#1c2029;border:1px solid #2a2f3a;border-radius:10px;padding:14px;transition:transform .35s ease;\">"
+        "<div style=\"font-family:'JetBrains Mono',monospace;font-size:11px;color:#5b6270;\">USD</div>"
+        "<div id='usd' style=\"font-size:21px;font-weight:700;margin-top:4px;font-family:'JetBrains Mono',monospace;color:#e8b85c;\">$0</div>"
+        "</div>"
+        "<div class='pc-3d' style=\"flex:1;background:#1c2029;border:1px solid #2a2f3a;border-radius:10px;padding:14px;transition:transform .35s ease;\">"
+        "<div style=\"font-family:'JetBrains Mono',monospace;font-size:11px;color:#5b6270;\">PKR</div>"
+        "<div id='pkr' style=\"font-size:21px;font-weight:700;margin-top:4px;font-family:'JetBrains Mono',monospace;color:#e8b85c;\">Rs 0</div>"
+        "</div>"
+        "</div>"
+        f"<div style=\"font-family:'JetBrains Mono',monospace;font-size:11px;color:#5b6270;margin-top:10px;display:flex;align-items:center;gap:6px;\">"
+        f"<span style='width:5px;height:5px;border-radius:50%;background:{dot_color};display:inline-block;'></span>"
+        f"1 USD &asymp; {rate:.2f} PKR ({label})</div>"
+        "</div>"
+        "<style>.pc-3d:hover{transform:translateY(-3px) scale(1.015);border-color:#5b8def !important;}</style>"
+        "<script>"
+        "function countUp(id,target,prefix){"
+        "const el=document.getElementById(id);const start=performance.now(),dur=900;"
+        "function frame(now){const p=Math.min(1,(now-start)/dur);const eased=1-Math.pow(1-p,3);"
+        "const val=Math.round(target*eased);el.textContent=prefix+val.toLocaleString();"
+        "if(p<1)requestAnimationFrame(frame);}"
+        "requestAnimationFrame(frame);}"
+        f"countUp('usd',{usd},'$');"
+        f"countUp('pkr',{pkr},'Rs ');"
+        "</script>"
+    )
 
 
 def bar_html(rows: list[tuple[str, float]]) -> str:
-    out = []
+    parts = []
     for label, pct in rows:
-        out.append(f"""
-        <div class="bar-row">
-          <div class="bar-label"><span>{label}</span><span>{pct*100:.1f}%</span></div>
-          <div class="bar-track"><div class="bar-fill" style="--w:{pct*100}%"></div></div>
-        </div>""")
-    return "\n".join(out)
+        parts.append(
+            "<div class='bar-row'>"
+            f"<div class='bar-label'><span>{label}</span><span>{pct*100:.1f}%</span></div>"
+            f"<div class='bar-track'><div class='bar-fill' style='--w:{pct*100}%'></div></div>"
+            "</div>"
+        )
+    return "".join(parts)
 
 
 def shap_html(contribs: list[dict]) -> str:
     if not contribs:
-        return "<p style='color:#565f74; font-size:12.5px;'>Not available for this model.</p>"
+        return "<p style='color:#5b6270;font-size:12.5px;'>Not available for this model.</p>"
     max_abs = max(abs(c["contribution_usd"]) for c in contribs) or 1
-    rows = []
+    parts = []
     for c in contribs:
         pct = abs(c["contribution_usd"]) / max_abs * 48
         cls = "pos" if c["contribution_usd"] >= 0 else "neg"
         sign = "+" if c["contribution_usd"] >= 0 else ""
-        rows.append(f"""
-        <div class="shap-row">
-          <span class="shap-feat" title="{c['feature']}">{c['feature']}</span>
-          <div class="shap-track"><div class="shap-mid"></div><div class="shap-fill {cls}" style="--w:{pct}%"></div></div>
-          <span class="shap-amt">{sign}${c['contribution_usd']}</span>
-        </div>""")
-    return "\n".join(rows)
+        parts.append(
+            "<div class='shap-row'>"
+            f"<span class='shap-feat' title='{c['feature']}'>{c['feature']}</span>"
+            f"<div class='shap-track'><div class='shap-mid'></div><div class='shap-fill {cls}' style='--w:{pct}%'></div></div>"
+            f"<span class='shap-amt'>{sign}${c['contribution_usd']}</span>"
+            "</div>"
+        )
+    return "".join(parts)
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -267,11 +240,14 @@ with col_main:
         fx = get_usd_to_pkr_rate()
         pkr_price = round(res["estimated_price_usd"] * fx["rate"])
 
-        st.markdown(
-            f'<div class="tier-badge"><div class="k">predicted tier</div>'
-            f'<div class="name">{tier}</div></div>',
-            unsafe_allow_html=True,
+        badge = (
+            "<div class='tier-badge card-3d'>"
+            "<div class='k'>predicted tier</div>"
+            f"<div class='name'>{tier}</div>"
+            "<div class='accent-bar'></div>"
+            "</div>"
         )
+        st.markdown(badge, unsafe_allow_html=True)
 
         components.html(
             price_cards_html(res["estimated_price_usd"], pkr_price, fx["live"], fx["rate"]),
@@ -281,8 +257,7 @@ with col_main:
                    "Compare it with real listings in the Pakistani Market panel →")
 
         st.markdown("#### Class probabilities")
-        proba_rows = list(res["class_probabilities"].items())
-        st.markdown(bar_html(proba_rows), unsafe_allow_html=True)
+        st.markdown(bar_html(list(res["class_probabilities"].items())), unsafe_allow_html=True)
 
         if res.get("top_contributions"):
             st.markdown("#### Why this price? (SHAP contributions)")
@@ -301,22 +276,23 @@ with col_market:
     st.markdown("#### 🇵🇰 Pakistani market")
     data = get_market_data(limit=12)
     if not data["items"]:
-        st.markdown(
-            '<div class="market-empty">No market data cached yet.<br><br>'
-            'Run <code>python -m src.data.scrape_priceoye</code> once '
-            '(from a machine with internet access) to populate live '
-            'PriceOye.pk listings here.</div>',
-            unsafe_allow_html=True,
+        empty = (
+            "<div class='market-empty'>No market data cached yet.<br><br>"
+            "Run <code>python -m src.data.scrape_priceoye</code> once "
+            "(from a machine with internet access) to populate live "
+            "PriceOye.pk listings here.</div>"
         )
+        st.markdown(empty, unsafe_allow_html=True)
     else:
         st.caption(f"{len(data['items'])} listings cached")
-        cards = ""
+        cards = []
         for i, item in enumerate(data["items"]):
             price = f"Rs {item['price_pkr']:,}" if item.get("price_pkr") else "—"
-            cards += (
-                f'<div class="market-card" style="animation-delay:{min(i*0.05,0.6)}s; margin-bottom:10px;">'
-                f'<div class="name">{item.get("model","Unknown model")}</div>'
-                f'<div class="price">{price}</div>'
-                f'<div class="avail">{item.get("availability","")}</div></div>'
+            cards.append(
+                f"<div class='market-card card-3d' style='animation-delay:{min(i*0.05,0.6)}s;'>"
+                f"<div class='name'>{item.get('model','Unknown model')}</div>"
+                f"<div class='price'>{price}</div>"
+                f"<div class='avail'>{item.get('availability','')}</div>"
+                "</div>"
             )
-        st.markdown(cards, unsafe_allow_html=True)
+        st.markdown("".join(cards), unsafe_allow_html=True)
