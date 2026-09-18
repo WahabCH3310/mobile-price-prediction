@@ -44,6 +44,54 @@ All acceptance targets from the proposal (§12.1) are **met** on a held-out 20 %
 
 ---
 
+## 🚀 The Streamlit app now includes PKR pricing + Pakistani market data
+
+`app/streamlit_app.py` was redesigned with a dark, animated theme (Space Grotesk /
+JetBrains Mono type, gradient hero, animated probability & SHAP bars, count-up price
+numbers) and two new data sources, both usable entirely within the existing Streamlit
+Cloud deployment — no separate hosting needed:
+
+- **Live USD → PKR conversion** (`src/services/currency.py`) — every prediction shows
+  the estimated price in USD and in PKR, using a live hourly-cached exchange rate with
+  a graceful fallback if the rate API is briefly unreachable.
+- **Pakistani market comparison panel** (`src/services/market.py`) — shows real
+  PriceOye.pk retail listings alongside the model's own prediction, kept visually
+  separate so the two are never confused (see note below).
+
+Theme colors live in `.streamlit/config.toml`; just push this repo the same way you
+deployed it originally (`git add . && git commit && git push`) and Streamlit Cloud
+picks up the change and redeploys automatically — nothing else to configure.
+
+An optional FastAPI backend (`app/api.py`) and static HTML frontend
+(`app/static/index.html`) are also included in this repo for anyone who later wants a
+standalone web app outside Streamlit, but they're **not required** — the Streamlit app
+is fully self-contained.
+
+### Keeping the Pakistani market data fresh
+
+The market panel reads a cached JSON file rather than scraping PriceOye.pk on every
+page load (scraping live per-request is slow and can get you rate-limited). Two ways
+to refresh it:
+
+- **Automatic:** `.github/workflows/refresh_market_data.yml` runs the scraper every
+  6 hours and commits the result straight to the repo — Streamlit Cloud redeploys on
+  that push automatically. GitHub-hosted runners are sometimes blocked by anti-bot
+  rules; if the job stops finding rows, run the scraper from your own machine instead.
+- **Manual:** `python -m src.data.scrape_priceoye --max-pages 10`, then commit + push.
+
+Until it's run at least once, the market panel shows an empty state explaining this
+rather than fake data.
+
+### Notes on the price estimate
+
+The regression target (`price_usd`) is trained on the public Kaggle dataset and is a
+**demonstration proxy**, not a live market price (see `config/config.yaml`). The PKR
+figure shown is a live currency conversion *of that proxy*, not a scraped real price —
+the market panel is what shows actual current Pakistani retail prices, kept
+deliberately separate so the two are never confused.
+
+---
+
 ## 🗂️ Project structure
 
 ```
