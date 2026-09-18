@@ -1,0 +1,69 @@
+# ══════════════════════════════════════════════════════════════════
+#  Mobile Price Prediction — Central Configuration
+#  Edit values here; all scripts read from this single source of truth.
+# ══════════════════════════════════════════════════════════════════
+
+project:
+  name: mobile-price-prediction
+  random_seed: 42
+
+paths:
+  raw_data:        data/raw/mobile_price.csv
+  processed_dir:   data/processed
+  train_processed: data/processed/train.csv
+  test_processed:  data/processed/test.csv
+  models_dir:      models
+  reports_dir:     reports
+  figures_dir:     reports/figures
+
+data:
+  test_size: 0.20
+  # column that holds the ordinal price tier (0=budget .. 3=flagship)
+  target_classification: price_range
+  # continuous price target (created as a demonstration proxy until real
+  # scraped GSMArena / PriceOye prices are merged in — see README §Data)
+  target_regression: price_usd
+
+features:
+  # engineered features created in src/features/build_features.py
+  engineered:
+    - pixel_density
+    - camera_score
+    - screen_area
+    - battery_per_gram
+    - is_flagship
+
+preprocessing:
+  numeric_imputer: median
+  scale_for_linear_models: true      # StandardScaler for LogReg / SVM / MLP
+  smote_imbalance_ratio: 3.0         # apply SMOTE only if imbalance > this
+
+training:
+  cv_folds: 5
+  # models to train for the classification task
+  classifiers:
+    - logistic_regression
+    - svm
+    - random_forest
+    - xgboost
+    - lightgbm
+    - mlp
+  # models to train for the regression task
+  regressors:
+    - random_forest
+    - xgboost
+    - lightgbm
+
+tuning:
+  enabled: true
+  n_trials: 40          # Optuna trials per tuned model (raise for final run)
+  timeout_seconds: 600  # hard cap per study
+  tuned_models:
+    - xgboost
+    - lightgbm
+
+targets:            # acceptance thresholds from the FYP proposal
+  classification_accuracy: 0.93
+  classification_f1_macro: 0.92
+  regression_r2: 0.90
+  regression_mape: 0.12

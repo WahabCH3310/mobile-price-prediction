@@ -1,0 +1,187 @@
+{
+  "dataset": {
+    "rows": 2000,
+    "n_features": 25,
+    "test_size": 0.2
+  },
+  "targets": {
+    "classification_accuracy": 0.93,
+    "classification_f1_macro": 0.92,
+    "regression_r2": 0.9,
+    "regression_mape": 0.12
+  },
+  "classification": {
+    "Logistic Regression": {
+      "cv": {
+        "accuracy_mean": 0.94375,
+        "accuracy_std": 0.006846531968814572,
+        "f1_macro_mean": 0.9436146229570725,
+        "f1_macro_std": 0.006833279483622376
+      },
+      "test": {
+        "accuracy": 0.9475,
+        "f1_macro": 0.9472353214499423,
+        "roc_auc_ovr": 0.9982166666666665
+      },
+      "best_params": {},
+      "train_seconds": 2.4
+    },
+    "SVM": {
+      "cv": {
+        "accuracy_mean": 0.8481249999999999,
+        "accuracy_std": 0.013491895715576827,
+        "f1_macro_mean": 0.8495687555455946,
+        "f1_macro_std": 0.012763330201869372
+      },
+      "test": {
+        "accuracy": 0.875,
+        "f1_macro": 0.8755795199737876,
+        "roc_auc_ovr": 0.9803999999999999
+      },
+      "best_params": {},
+      "train_seconds": 2.2
+    },
+    "Random Forest": {
+      "cv": {
+        "accuracy_mean": 0.8856250000000001,
+        "accuracy_std": 0.025356828468876,
+        "f1_macro_mean": 0.884964334374137,
+        "f1_macro_std": 0.025407673279068926
+      },
+      "test": {
+        "accuracy": 0.9125,
+        "f1_macro": 0.9122406462935861,
+        "roc_auc_ovr": 0.9858708333333333
+      },
+      "best_params": {},
+      "train_seconds": 6.3
+    },
+    "XGBoost": {
+      "cv": {
+        "accuracy_mean": 0.9112499999999999,
+        "accuracy_std": 0.01763341997458233,
+        "f1_macro_mean": 0.9111316192614982,
+        "f1_macro_std": 0.017570631673917893
+      },
+      "test": {
+        "accuracy": 0.93,
+        "f1_macro": 0.9298426998195897,
+        "roc_auc_ovr": 0.9941333333333333
+      },
+      "best_params": {
+        "n_estimators": 300,
+        "max_depth": 5,
+        "learning_rate": 0.039988643862778485,
+        "subsample": 0.6403039840257165,
+        "colsample_bytree": 0.8604836787197946,
+        "reg_alpha": 0.004278250831182636,
+        "reg_lambda": 0.995864687953486
+      },
+      "train_seconds": 133.5
+    },
+    "LightGBM": {
+      "cv": {
+        "accuracy_mean": 0.914375,
+        "accuracy_std": 0.012747548783981958,
+        "f1_macro_mean": 0.914371161361719,
+        "f1_macro_std": 0.013079040957614974
+      },
+      "test": {
+        "accuracy": 0.935,
+        "f1_macro": 0.9350300276126051,
+        "roc_auc_ovr": 0.9941833333333333
+      },
+      "best_params": {
+        "n_estimators": 450,
+        "max_depth": 3,
+        "learning_rate": 0.08338735045935033,
+        "subsample": 0.9413402192086422,
+        "colsample_bytree": 0.9891034601593678,
+        "reg_alpha": 0.00345537419792289,
+        "reg_lambda": 0.07501445756154194,
+        "num_leaves": 77
+      },
+      "train_seconds": 114.0
+    },
+    "MLP (Neural Net)": {
+      "cv": {
+        "accuracy_mean": 0.884375,
+        "accuracy_std": 0.015181197251863923,
+        "f1_macro_mean": 0.8844158093555782,
+        "f1_macro_std": 0.015104058096996442
+      },
+      "test": {
+        "accuracy": 0.8975,
+        "f1_macro": 0.8978975022844959,
+        "roc_auc_ovr": 0.9851916666666667
+      },
+      "best_params": {},
+      "train_seconds": 1.6
+    }
+  },
+  "regression": {
+    "Random Forest": {
+      "mae": 38.77967249999997,
+      "rmse": 49.38425029433989,
+      "r2": 0.8915830076215101,
+      "mape": 0.07312850897570587
+    },
+    "XGBoost": {
+      "mae": 32.7723338180542,
+      "rmse": 41.764236166779966,
+      "r2": 0.9224593368493256,
+      "mape": 0.060764087824428756
+    },
+    "LightGBM": {
+      "mae": 32.17269633600747,
+      "rmse": 40.6157409891267,
+      "r2": 0.9266653562176108,
+      "mape": 0.05880572782799039
+    }
+  },
+  "best_classifier": "Logistic Regression",
+  "best_regressor": "LightGBM",
+  "shap_model": "LightGBM",
+  "shap_top_features": [
+    [
+      "ram",
+      6.165750515294828
+    ],
+    [
+      "battery_power",
+      1.337726226640831
+    ],
+    [
+      "px_width",
+      1.020133767551645
+    ],
+    [
+      "px_height",
+      0.9105065514492532
+    ],
+    [
+      "battery_per_gram",
+      0.779123537474967
+    ],
+    [
+      "pixel_density",
+      0.28883397654733506
+    ],
+    [
+      "int_memory",
+      0.15116024055584124
+    ],
+    [
+      "sc_h",
+      0.1302675707477299
+    ],
+    [
+      "screen_area",
+      0.12820091217368224
+    ],
+    [
+      "talk_time",
+      0.12432137701736817
+    ]
+  ]
+}

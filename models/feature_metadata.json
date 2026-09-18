@@ -1,0 +1,166 @@
+{
+  "feature_columns": [
+    "battery_power",
+    "blue",
+    "clock_speed",
+    "dual_sim",
+    "fc",
+    "four_g",
+    "int_memory",
+    "m_dep",
+    "mobile_wt",
+    "n_cores",
+    "pc",
+    "px_height",
+    "px_width",
+    "ram",
+    "sc_h",
+    "sc_w",
+    "talk_time",
+    "three_g",
+    "touch_screen",
+    "wifi",
+    "screen_area",
+    "pixel_density",
+    "camera_score",
+    "battery_per_gram",
+    "is_flagship"
+  ],
+  "tier_names": {
+    "0": "Budget",
+    "1": "Mid",
+    "2": "Premium",
+    "3": "Flagship"
+  },
+  "best_classifier": "Logistic Regression",
+  "best_regressor": "LightGBM",
+  "feature_ranges": {
+    "battery_power": [
+      501.0,
+      1998.0
+    ],
+    "blue": [
+      0.0,
+      1.0
+    ],
+    "clock_speed": [
+      0.5,
+      3.0
+    ],
+    "dual_sim": [
+      0.0,
+      1.0
+    ],
+    "fc": [
+      0.0,
+      19.0
+    ],
+    "four_g": [
+      0.0,
+      1.0
+    ],
+    "int_memory": [
+      2.0,
+      64.0
+    ],
+    "m_dep": [
+      0.1,
+      1.0
+    ],
+    "mobile_wt": [
+      80.0,
+      200.0
+    ],
+    "n_cores": [
+      1.0,
+      8.0
+    ],
+    "pc": [
+      0.0,
+      20.0
+    ],
+    "px_height": [
+      0.0,
+      1960.0
+    ],
+    "px_width": [
+      500.0,
+      1998.0
+    ],
+    "ram": [
+      256.0,
+      3998.0
+    ],
+    "sc_h": [
+      5.0,
+      19.0
+    ],
+    "sc_w": [
+      0.0,
+      18.0
+    ],
+    "talk_time": [
+      2.0,
+      20.0
+    ],
+    "three_g": [
+      0.0,
+      1.0
+    ],
+    "touch_screen": [
+      0.0,
+      1.0
+    ],
+    "wifi": [
+      0.0,
+      1.0
+    ],
+    "screen_area": [
+      0.0,
+      342.0
+    ],
+    "pixel_density": [
+      0.0,
+      3217516000000.0
+    ],
+    "camera_score": [
+      0.0,
+      29.5
+    ],
+    "battery_per_gram": [
+      2.5226130526501858,
+      24.774999690312505
+    ],
+    "is_flagship": [
+      0.0,
+      1.0
+    ]
+  },
+  "feature_medians": {
+    "battery_power": 1226.0,
+    "blue": 0.0,
+    "clock_speed": 1.5,
+    "dual_sim": 1.0,
+    "fc": 3.0,
+    "four_g": 1.0,
+    "int_memory": 32.0,
+    "m_dep": 0.5,
+    "mobile_wt": 141.0,
+    "n_cores": 4.0,
+    "pc": 10.0,
+    "px_height": 564.0,
+    "px_width": 1247.0,
+    "ram": 2146.5,
+    "sc_h": 12.0,
+    "sc_w": 5.0,
+    "talk_time": 11.0,
+    "three_g": 1.0,
+    "touch_screen": 1.0,
+    "wifi": 1.0,
+    "screen_area": 55.0,
+    "pixel_density": 11800.732753095574,
+    "camera_score": 11.5,
+    "battery_per_gram": 8.84765805677388,
+    "is_flagship": 0.0
+  }
+}
